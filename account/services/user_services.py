@@ -12,10 +12,10 @@ def get_user_by_name(username: str) -> User:
     except User.DoesNotExist:
         raise
 
-    return User
+    return user
 
 
-def get_user_by_request(request) -> str:
+def get_user_by_request(request) -> User:
     """Получает токен из header Authorization. Возращает юзера по токену"""
     header = get_authorization_header(request).decode("utf-8")
     if "Token" in header:
@@ -23,6 +23,8 @@ def get_user_by_request(request) -> str:
         try:
             token = Token.objects.get(key=token_key)
         except Token.DoesNotExist:
-            return False
+            raise
 
         return token.user
+
+    raise Token.DoesNotExist

@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
+from django.core.cache import cache
 from django.conf import settings
 
 from datetime import datetime, timedelta
@@ -23,6 +24,21 @@ class User(AbstractUser):
                                        "/default.png")
     description = models.TextField(max_length=1200, default="Пользователь не написал о себе.")
     abilities = models.ManyToManyField(Ability, max_length=10)
+
+    def last_seen(self):
+        return cache.get('seen_%s' % self.username)
+
+    def is_online(self) -> bool:
+        """Returns user status. If online - True, else Fasle"""
+        if self.last_seen():
+            now = datetime.now()
+            if now > self.last_seen() + timedelta(
+                    seconds=settings.USER_ONLINE_TIMEOUT):
+                return False
+            else:
+                return True
+        else:
+            return False
 
 
 class RegistrationLinkGenerator(models.Model):
