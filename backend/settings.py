@@ -10,22 +10,31 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 import os
+import environ
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+env = environ.Env(
+    DEBUG=(bool, True)
+)
+environ.Env.read_env()
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-m_6elnys!r=%-4r2z%=^1yw_1^_jv(b(230ojox010=nmq^-g#'
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = []
+DEVELOPMENT = env.bool('DEVELOPMENT', True)
+
+ALLOWED_HOSTS = [
+        "194-67-91-36.cloudvps.regruhosting.ru",
+    "194.67.91.36",
+]
 
 
 # Application definition
@@ -93,10 +102,8 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': env.db()
+        
 }
 
 
@@ -170,6 +177,6 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
     'http://127.0.0.1:8080',
 ]
 
-FRONTEND_HOST = "http://127.0.0.1:8080/"
+FRONTEND_HOST = "http://194-67-91-36.cloudvps.regruhosting.ru/"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
