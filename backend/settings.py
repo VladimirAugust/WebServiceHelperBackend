@@ -32,8 +32,9 @@ DEBUG = env('DEBUG')
 DEVELOPMENT = env.bool('DEVELOPMENT', True)
 
 ALLOWED_HOSTS = [
-        "194-67-91-36.cloudvps.regruhosting.ru",
+    "194-67-91-36.cloudvps.regruhosting.ru",
     "194.67.91.36",
+    "127.0.0.1"
 ]
 
 

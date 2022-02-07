@@ -23,7 +23,7 @@ class User(AbstractUser):
                                default="images/uploads/users/avatars"
                                        "/default.png")
     description = models.TextField(max_length=1200, default="Пользователь не написал о себе.")
-    abilities = models.ManyToManyField(Ability, max_length=10)
+    abilities = models.ManyToManyField(Ability, max_length=10, blank=True)
 
     def last_seen(self):
         return cache.get('seen_%s' % self.username)
