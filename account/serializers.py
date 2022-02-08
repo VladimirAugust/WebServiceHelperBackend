@@ -1,10 +1,50 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
-from .services.user_services import get_user_by_request
+from phonenumber_field.serializerfields import PhoneNumberField
 
 
 User = get_user_model()
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    balance = serializers.SerializerMethodField("get_balance")
+    avatar_url = serializers.SerializerMethodField("get_avatar_url")
+
+    class Meta:
+        model = User
+        fields = ["balance", "avatar_url", "username"]
+
+    @staticmethod
+    def get_balance(obj):
+        return obj.gifts
+
+    def get_avatar_url(self, obj):
+        request = self.context.get("request")
+        return request.build_absolute_uri(obj.avatar.url)
+
+
+class UserSettingsSerializer(serializers.Serializer):
+    first_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
+    last_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
+    city = serializers.CharField(max_length=100, required=True)
+    district = serializers.CharField(max_length=100, required=True)
+    phone_number = PhoneNumberField(required=True)
+
+    avatar = serializers.SerializerMethodField("get_avatar")
+
+    def get_avatar(self, obj):
+        request = self.context.get("request")
+        return request.build_absolute_uri(obj.avatar.url)
+
+    def update(self, instance, validated_data):
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.city = validated_data.get('city', instance.city)
+        instance.district = validated_data.get('district', instance.district)
+        instance.phone_number = validated_data.get('phone_number', instance.phone_number)
+        instance.save()
+        return instance
 
 
 class UserInfoSerializer(serializers.ModelSerializer):
@@ -20,11 +60,8 @@ class UserInfoSerializer(serializers.ModelSerializer):
 
     def is_current_session_user(self, obj):
         """Check if current session user equals input user"""
-        try:
-            current_session_user = get_user_by_request(self.context.get("request"))
-        except Token.DoesNotExist:
-            return False
-        if obj:
+        current_session_user = self.context.get("request").user
+        if obj and current_session_user:
             if current_session_user == obj:
                 return True
         return False
@@ -91,7 +128,7 @@ class LoginSerializer(serializers.Serializer):
                 'Пользователь был деактивирован'
             )
 
-        token = Token.objects.get(user=user)
+        token, _ = Token.objects.get_or_create(user=user)
 
         return {
             'email': user.email,

@@ -3,8 +3,8 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MinValueValidator
 from django.core.cache import cache
 from django.conf import settings
-
 from datetime import datetime, timedelta
+from phonenumber_field.modelfields import PhoneNumberField
 
 import uuid
 
@@ -24,6 +24,9 @@ class User(AbstractUser):
                                        "/default.png")
     description = models.TextField(max_length=1200, default="Пользователь не написал о себе.")
     abilities = models.ManyToManyField(Ability, max_length=10, blank=True)
+    city = models.CharField(verbose_name="Город проживания", max_length=100, blank=True)
+    district = models.CharField(verbose_name="Район проживания", max_length=100, blank=True)
+    phone_number = PhoneNumberField(verbose_name="Номер телефона", unique=False, null=True, blank=True)
 
     def last_seen(self):
         return cache.get('seen_%s' % self.username)

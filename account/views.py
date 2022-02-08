@@ -1,16 +1,34 @@
-from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .services.user_services import get_user_by_name, get_user_by_request
+from .services.user_services import get_user_by_name
 from .services.registration import is_link_valid, create_user
-from .serializers import RegisterUserSerializer, RegisterPageSerializer, UserInfoSerializer, LoginSerializer
+from .serializers import (RegisterUserSerializer, RegisterPageSerializer, UserInfoSerializer, LoginSerializer, \
+                          UserSettingsSerializer, ProfileSerializer)
 from .exceptions import UserAlreadyExist, URLHashDoesNotExist
 from django.contrib.auth import get_user_model
 
-
 User = get_user_model()
+
+
+class SettingsAPIView(generics.UpdateAPIView):
+    """
+    Выставляет настройки юзера.
+    """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = UserSettingsSerializer
+
+    def post(self, request) -> Response:
+        user = request.user
+        serializer = self.serializer_class(data=request.data, context={"request": request}, instance=user)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response({}, status=status.HTTP_200_OK)
+
+    def get(self, request) -> Response:
+        serializer = self.serializer_class(request.user, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class RegisterPageView(APIView):
@@ -21,7 +39,7 @@ class RegisterPageView(APIView):
     serializer_class = RegisterPageSerializer
 
     def post(self, request) -> Response:
-        serializer = RegisterPageSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid(raise_exception=True):
             data = serializer.validate(request.data)
             if is_link_valid(data["url_hash"]):
@@ -48,18 +66,12 @@ class ProfileAPIView(APIView):
     balance, avatar url, username, etc
     """
     permission_classes = (IsAuthenticated,)
+    serializer_class = ProfileSerializer
 
     def get(self, request):
-        try:
-            user = get_user_by_request(request)
-        except Token.DoesNotExist:
-            return Response({"error": "Token does not exist"}, status=status.HTTP_401_UNAUTHORIZED)
-
-        return Response({
-            "balance": user.gifts,
-            "avatar_url": request.build_absolute_uri(user.avatar.url),
-            "username": user.username,
-        }, status=status.HTTP_200_OK)
+        user = request.user
+        serializer = self.serializer_class(user, context={"request": request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class UserInfoAPIView(APIView):
@@ -73,18 +85,19 @@ class UserInfoAPIView(APIView):
         except User.DoesNotExist:
             return Response({}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = UserInfoSerializer(user, context={
+        serializer = self.serializer_class(user, context={
             "request": request
         })
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class RegisterAPIView(APIView):
+    """Регстрирует пользователя"""
     permission_classes = (AllowAny,)
     serializer_class = RegisterUserSerializer
 
     def post(self, request) -> Response:
-        serializer = RegisterUserSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid(raise_exception=True):
             data = serializer.validate(request.data)
             try:
