@@ -31,9 +31,19 @@ class UserSettingsSerializer(serializers.Serializer):
     district = serializers.CharField(max_length=100, required=True)
     phone_number = PhoneNumberField(required=True)
 
+    email = serializers.SerializerMethodField("get_email")
     avatar = serializers.SerializerMethodField("get_avatar")
+    username = serializers.SerializerMethodField("get_username")
 
-    def get_avatar(self, obj):
+    @staticmethod
+    def get_email(obj):
+        return obj.email
+
+    @staticmethod
+    def get_username(obj: User):
+        return obj.username
+
+    def get_avatar(self, obj: User):
         request = self.context.get("request")
         return request.build_absolute_uri(obj.avatar.url)
 
