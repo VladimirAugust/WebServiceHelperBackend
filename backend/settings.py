@@ -31,11 +31,7 @@ DEBUG = env('DEBUG')
 
 DEVELOPMENT = env.bool('DEVELOPMENT', True)
 
-ALLOWED_HOSTS = [
-    "194-67-91-36.cloudvps.regruhosting.ru",
-    "194.67.91.36",
-    "127.0.0.1"
-]
+ALLOWED_HOSTS = ["194-67-91-36.cloudvps.regruhosting.ru", "194.67.91.36"] if not DEVELOPMENT else ["127.0.0.1"]
 
 
 # Application definition
@@ -173,7 +169,7 @@ AUTH_USER_MODEL = 'account.User'
 CORS_ALLOW_ALL_ORIGINS = False   # If this is used then `CORS_ALLOWED_ORIGINS` will not have any effect
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-        'http://194-67-91-36.cloudvps.regruhosting.ru/',
+    'http://194-67-91-36.cloudvps.regruhosting.ru',
 ]
 CORS_ALLOWED_ORIGIN_REGEXES = [
     'http://127.0.0.1:8080',

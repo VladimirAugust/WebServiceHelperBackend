@@ -155,12 +155,14 @@ class LoginSerializer(serializers.Serializer):
             user = User.objects.get(email=email)
         except User.DoesNotExist:
             raise serializers.ValidationError(
-                'Пользователь с такой почтой или паролем не найден'
+                {"email": ['Пользователь с такой почтой или паролем не найден'],
+                 "password": ['Пользователь с такой почтой или паролем не найден']}
             )
 
         if not user.check_password(password):
             raise serializers.ValidationError(
-                'Пользователь с такой почтой или паролем не найден'
+                {"email": ['Пользователь с такой почтой или паролем не найден'],
+                 "password": ['Пользователь с такой почтой или паролем не найден']}
             )
 
         if not user.is_active:
