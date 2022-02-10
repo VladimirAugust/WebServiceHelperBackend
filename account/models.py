@@ -26,7 +26,7 @@ class User(AbstractUser):
     abilities = models.ManyToManyField(Ability, max_length=10, blank=True)
     city = models.CharField(verbose_name="Город проживания", max_length=100, blank=True)
     district = models.CharField(verbose_name="Район проживания", max_length=100, blank=True)
-    phone_number = PhoneNumberField(verbose_name="Номер телефона", unique=False, null=True, blank=True)
+    phone_number = PhoneNumberField(verbose_name="Номер телефона", null=True, blank=True)
 
     def last_seen(self):
         return cache.get('seen_%s' % self.username)

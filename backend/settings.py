@@ -160,20 +160,20 @@ USE_TZ = True
 
 MEDIA_DIR = os.path.join(BASE_DIR, 'media')
 
-MEDIA_ROOT = MEDIA_DIR
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 STATIC_URL = 'static/'
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 AUTH_USER_MODEL = 'account.User'
 
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
-CORS_ALLOW_ALL_ORIGINS = True   # If this is used then `CORS_ALLOWED_ORIGINS` will not have any effect
+CORS_ALLOW_ALL_ORIGINS = False   # If this is used then `CORS_ALLOWED_ORIGINS` will not have any effect
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:8080',
+        'http://194-67-91-36.cloudvps.regruhosting.ru/',
 ]
 CORS_ALLOWED_ORIGIN_REGEXES = [
     'http://127.0.0.1:8080',
