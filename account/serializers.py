@@ -7,6 +7,31 @@ from phonenumber_field.serializerfields import PhoneNumberField
 User = get_user_model()
 
 
+class UserPasswordChangeSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True, max_length=64)
+    new_password = serializers.CharField(required=True, max_length=64)
+
+    def validate(self, data):
+        """add here additional check for password strength if needed"""
+        if not self.context.get('request').user.check_password(data.get("old_password")):
+            raise serializers.ValidationError({'old_password': 'Wrong password.'})
+        return data
+
+    def update(self, instance, validated_data):
+        instance.set_password(validated_data['new_password'])
+        instance.save()
+        return instance
+
+    def create(self, validated_data):
+        pass
+
+    @property
+    def data(self):
+        """just return success dictionary. you can change this to your need, but i dont think output should be user
+        data after password change """
+        return {'Success': True}
+
+
 class ProfileSerializer(serializers.ModelSerializer):
     balance = serializers.SerializerMethodField("get_balance")
     avatar_url = serializers.SerializerMethodField("get_avatar_url")
@@ -127,8 +152,13 @@ class LoginSerializer(serializers.Serializer):
             )
 
         try:
-            user = User.objects.get(email=email, password=password)
+            user = User.objects.get(email=email)
         except User.DoesNotExist:
+            raise serializers.ValidationError(
+                'Пользователь с такой почтой или паролем не найден'
+            )
+
+        if not user.check_password(password):
             raise serializers.ValidationError(
                 'Пользователь с такой почтой или паролем не найден'
             )

@@ -24,9 +24,9 @@ def create_user(username: str, email: str, password: str, url_hash: str) -> str:
         raise URLHashDoesNotExist()
 
     user, created = User.objects.get_or_create(username=username,
-                                               email=email,
-                                               password=password)
+                                               email=email)
     if created:
+        user.set_password(password)
         user.save()
         token = Token.objects.create(user=user)
         link.delete()

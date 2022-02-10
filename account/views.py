@@ -5,11 +5,20 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from .services.user_services import get_user_by_name
 from .services.registration import is_link_valid, create_user
 from .serializers import (RegisterUserSerializer, RegisterPageSerializer, UserInfoSerializer, LoginSerializer, \
-                          UserSettingsSerializer, ProfileSerializer)
+                          UserSettingsSerializer, ProfileSerializer, UserPasswordChangeSerializer)
 from .exceptions import UserAlreadyExist, URLHashDoesNotExist
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+
+
+class APIChangePasswordView(generics.UpdateAPIView):
+    serializer_class = UserPasswordChangeSerializer
+    model = User
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self, queryset=None):
+        return self.request.user
 
 
 class SettingsAPIView(generics.UpdateAPIView):
