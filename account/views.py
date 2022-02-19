@@ -4,12 +4,24 @@ from rest_framework import status, generics
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .services.user_services import get_user_by_name
 from .services.registration import is_link_valid, create_user
-from .serializers import (RegisterUserSerializer, RegisterPageSerializer, UserInfoSerializer, LoginSerializer, \
-                          UserSettingsSerializer, ProfileSerializer, UserPasswordChangeSerializer)
+from .serializers import (RegisterUserSerializer, RegisterPageSerializer, UserUploadSerializer, LoginSerializer, \
+                          UserSettingsSerializer, ProfileSerializer, UserPasswordChangeSerializer, UserInfoSerializer)
 from .exceptions import UserAlreadyExist, URLHashDoesNotExist
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+
+
+class UploadAvatarAPIView(APIView):
+    model = User
+    permission_classes = (IsAuthenticated,)
+    serializer_class = UserUploadSerializer
+
+    def post(self, request):
+        print(request.data )
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.perform_update(serializer)
 
 
 class APIChangePasswordView(generics.UpdateAPIView):
