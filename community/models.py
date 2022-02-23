@@ -18,8 +18,6 @@ class Community(models.Model):
             related_name="Members",
             verbose_name="Участники группы"
     )
-    
-
 
     def __str__(self):
         return self.title

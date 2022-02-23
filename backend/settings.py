@@ -44,13 +44,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'account',
-    'community', 
+    'community',
 
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
     'phonenumber_field',
 ]
+
+AUTH_USER_MODEL = 'account.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -160,7 +162,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-AUTH_USER_MODEL = 'account.User'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field

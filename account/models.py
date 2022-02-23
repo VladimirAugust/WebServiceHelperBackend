@@ -32,7 +32,7 @@ class User(AbstractUser):
         return cache.get('seen_%s' % self.username)
 
     def is_online(self) -> bool:
-        """Returns user status. If online - True, else Fasle"""
+        """Returns user status. If online - True, else False"""
         if self.last_seen():
             now = datetime.now()
             if now > self.last_seen() + timedelta(
@@ -45,9 +45,11 @@ class User(AbstractUser):
 
 
 class RegistrationLinkGenerator(models.Model):
+    from community.models import Community
     url_hash = models.CharField(default=uuid.uuid4().hex, max_length=64, editable=False)
     alive_time = models.IntegerField(verbose_name="Время жизни ссылки(дни)", default=60)
     created_at = models.DateTimeField(auto_now_add=True)
+    community_invited = models.ForeignKey(Community, verbose_name="Пригласившое сообщество", on_delete=models.CASCADE)
 
     def __str__(self):
         return settings.FRONTEND_HOST + "register/" + self.url_hash

@@ -9,6 +9,7 @@ from .serializers import (RegisterUserSerializer, RegisterPageSerializer, UserUp
 from .exceptions import UserAlreadyExist, URLHashDoesNotExist
 from django.contrib.auth import get_user_model
 
+
 User = get_user_model()
 
 
@@ -18,7 +19,6 @@ class UploadAvatarAPIView(APIView):
     serializer_class = UserUploadSerializer
 
     def post(self, request):
-        print(request.data )
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.perform_update(serializer)
