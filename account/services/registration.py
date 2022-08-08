@@ -1,35 +1,26 @@
-from account.models import RegistrationLinkGenerator, User
-from account.exceptions import UserAlreadyExist, URLHashDoesNotExist
-from typing import Union
+from account.models import User
+from account.exceptions import UserAlreadyExist
 from rest_framework.authtoken.models import Token
+from django.utils.crypto import get_random_string
+from .telegram_service import send_message
 
 
-def is_link_valid(url_hash: str) -> Union[bool, RegistrationLinkGenerator]:
-    try:
-        register_link = RegistrationLinkGenerator.objects.get(url_hash=url_hash)
-
-    except RegistrationLinkGenerator.DoesNotExist:
-        return False
-
-    if not register_link.is_alive:
-        register_link.delete()
-        return False
-
-    return register_link
+def send_confirm_code(receiver_id, code, template):
+    msg = template.substitute(code=code)
+    send_message(receiver_id, msg)
 
 
-def create_user(username: str, email: str, password: str, url_hash: str) -> str:
-    link = is_link_valid(url_hash)
-    if not link:
-        raise URLHashDoesNotExist()
+def generate_confirm_code():
+    return get_random_string(length=5, allowed_chars='1234567890')
 
+
+def create_user(username: str, email: str, password: str,) -> str:
     user, created = User.objects.get_or_create(username=username,
                                                email=email)
     if created:
         user.set_password(password)
         user.save()
         token = Token.objects.create(user=user)
-        link.delete()
         return token.key
     else:
         raise UserAlreadyExist()

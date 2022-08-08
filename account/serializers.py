@@ -1,10 +1,22 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
-from phonenumber_field.serializerfields import PhoneNumberField
+from django.core.cache import cache
+from django.conf import settings
+from .services.registration import generate_confirm_code, send_confirm_code
+from telebot.apihelper import ApiTelegramException
 
 
 User = get_user_model()
+
+
+class UserChangeAvatarSerializer(serializers.Serializer):
+    avatar = serializers.ImageField(required=True)
+
+    def update(self, instance, validated_data):
+        instance.avatar = validated_data["avatar"]
+        instance.save()
+        return instance
 
 
 class UserPasswordChangeSerializer(serializers.Serializer):
@@ -54,7 +66,7 @@ class UserSettingsSerializer(serializers.Serializer):
     last_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
     city = serializers.CharField(max_length=100, required=True)
     district = serializers.CharField(max_length=100, required=True)
-    phone_number = PhoneNumberField(required=True)
+    phone_number = serializers.CharField(required=True)
 
     email = serializers.SerializerMethodField("get_email")
     avatar = serializers.SerializerMethodField("get_avatar")
@@ -102,153 +114,84 @@ class UserInfoSerializer(serializers.ModelSerializer):
         return False
 
 
-class RegisterPageSerializer(serializers.Serializer):
-    url_hash = serializers.CharField(max_length=64, required=True)
-
-    def validate(self, data):
-        return {
-            "url_hash": data["url_hash"]
-        }
-
-
 class RegisterUserSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=255, required=True)
-    email = serializers.CharField(max_length=255, required=True)
-    password = serializers.CharField(
-        write_only=True,
-        required=True,
-        help_text='Leave empty if no change needed',
-        style={'input_type': 'password', 'placeholder': 'Password'}
-    )
-    url_hash = serializers.CharField(max_length=64, required=True)
+    phone_number = serializers.CharField(required=True, max_length=20)
+    code = serializers.CharField(max_length=50, required=False)
+    step = serializers.IntegerField(required=True, write_only=True)
+
+    def create(self, validated_data):
+        user = User.objects.create(
+            phone_number=validated_data.get('phone_number')
+        )
+        return user
 
     def validate(self, data):
-        return {
-            "email": data["email"],
-            "password": data["password"],
-            "username": data["username"],
-            "url_hash": data["url_hash"]
-        }
+        step = data.get('step')
+        phone_number = data.get('phone_number')
+        try:
+            User.objects.get(phone_number=phone_number)
+            raise serializers.ValidationError({"phone_number": "Пользователь с таким номером телефона уже существует"})
+        except User.DoesNotExist:
+            pass
+
+        if step == 1:   # set phone number
+            code = generate_confirm_code()
+            cache.set(f'register_{phone_number}', code, settings.USER_CONFIRM_PHONE_NUMBER_TIMEOUT)
+            try:
+                send_confirm_code(phone_number, code, settings.CONFIRM_REGISTER_MESSAGE)
+            except ApiTelegramException:
+                raise serializers.ValidationError({"phone_number": "Такого номера не существует"})
+            return data
+        else:
+            code = data.get('code')
+            if not code:
+                raise serializers.ValidationError('Код не указан!')
+            confirm_code = cache.get(f'register_{phone_number}')
+            if code == confirm_code:
+                return data
+            else:
+                raise serializers.ValidationError('Код неверный')
 
 
 class LoginSerializer(serializers.Serializer):
-    email = serializers.CharField(max_length=255)
-    username = serializers.CharField(max_length=255, read_only=True)
-    password = serializers.CharField(max_length=128, write_only=True)
+    phone_number = serializers.CharField(max_length=20, required=True)
+    code = serializers.CharField(max_length=50, write_only=True, required=False)
+    step = serializers.IntegerField(required=True, write_only=True)
     token = serializers.CharField(max_length=255, read_only=True)
 
     def validate(self, data):
-        email = data.get('email', None)
-        password = data.get('password', None)
-
-        if email is None:
-            raise serializers.ValidationError(
-                'An email address is required to log in.'
-            )
-        email = email.lower()
-        if password is None:
-            raise serializers.ValidationError(
-                'A password is required to log in.'
-            )
+        phone_number = data.get('phone_number')
+        step = data.get('step')
 
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get(phone_number=phone_number)
         except User.DoesNotExist:
-            raise serializers.ValidationError(
-                {"email": ['Пользователь с такой почтой или паролем не найден'],
-                 "password": ['Пользователь с такой почтой или паролем не найден']}
-            )
-
-        if not user.check_password(password):
-            raise serializers.ValidationError(
-                {"email": ['Пользователь с такой почтой или паролем не найден'],
-                 "password": ['Пользователь с такой почтой или паролем не найден']}
-            )
+            raise serializers.ValidationError("Пользователь с таким номером телефона не найден!")
 
         if not user.is_active:
             raise serializers.ValidationError(
                 'Пользователь был деактивирован'
             )
 
-        token, _ = Token.objects.get_or_create(user=user)
-
-        return {
-            'email': user.email,
-            'username': user.username,
-            'token': token
-        }
-
-
-class Base64ImageField(serializers.ImageField):
-    """
-    A Django REST framework field for handling image-uploads through raw post data.
-    It uses base64 for encoding and decoding the contents of the file.
-
-    Heavily based on
-    https://github.com/tomchristie/django-rest-framework/pull/1268
-
-    Updated for Django REST framework 3.
-    """
-
-    def to_internal_value(self, data):
-        from django.core.files.base import ContentFile
-        import base64
-        import six
-        import uuid
-
-        # Check if this is a base64 string
-        if isinstance(data, six.string_types):
-            # Check if the base64 string is in the "data:" format
-            if 'data:' in data and ';base64,' in data:
-                # Break out the header from the base64 content
-                header, data = data.split(';base64,')
-
-            # Try to decode the file. Return validation error if it fails.
+        if step == 1:
+            code = generate_confirm_code()
+            cache.set(f'login_{phone_number}', code, settings.USER_CONFIRM_PHONE_NUMBER_TIMEOUT)
             try:
-                decoded_file = base64.b64decode(data)
-            except TypeError:
-                self.fail('invalid_image')
+                send_confirm_code(phone_number, code, settings.CONFIRM_LOGIN_MESSAGE)
+            except ApiTelegramException:
+                raise serializers.ValidationError({"phone_number": "Такого номера не существует"})
+            return data
+        else:
+            code = data.get('code')
+            if not code:
+                raise serializers.ValidationError('Код не указан!')
+            confirm_code = cache.get(f'login_{phone_number}')
+            if code == confirm_code:
+                token, _ = Token.objects.get_or_create(user=user)
 
-            # Generate file name:
-            file_name = str(uuid.uuid4())[:12] # 12 characters are more than enough.
-            # Get the file name extension:
-            file_extension = self.get_file_extension(file_name, decoded_file)
-
-            complete_file_name = "%s.%s" % (file_name, file_extension, )
-
-            data = ContentFile(decoded_file, name=complete_file_name)
-
-        return super(Base64ImageField, self).to_internal_value(data)
-
-    def get_file_extension(self, file_name, decoded_file):
-        import imghdr
-
-        extension = imghdr.what(file_name, decoded_file)
-        extension = "jpg" if extension == "jpeg" else extension
-
-        return extension
-
-
-class UserUploadSerializer(serializers.Serializer):
-    avatar = Base64ImageField(
-        max_length=None, use_url=True,
-    )
-
-    def validate(self, files):
-        try:
-            avatar = files["avatar"]
-        except KeyError:
-            return serializers.ValidationError({
-                "avatar": "You must select a file"
-            })
-        return {
-            "avatar": avatar
-        }
-
-    def update(self, instance: User, data) -> User:
-        instance.avatar = data["avatar"]
-        instance.save()
-        return instance
-
-    def perform_update(self, serializer):
-        serializer.save()
+                return {
+                    'phone_number': user.phone_number,
+                    'token': token
+                }
+            else:
+                raise serializers.ValidationError('Код неверный')

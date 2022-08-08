@@ -1,12 +1,9 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.core.validators import MinValueValidator
 from django.core.cache import cache
 from django.conf import settings
 from datetime import datetime, timedelta
-from phonenumber_field.modelfields import PhoneNumberField
-
-import uuid
 
 
 class Ability(models.Model):
@@ -16,7 +13,44 @@ class Ability(models.Model):
         return self.name
 
 
+class UserManager(BaseUserManager):
+    """Define a model manager for User model with no username field."""
+
+    use_in_migrations = True
+
+    def _create_user(self, phone_number, password, **extra_fields):
+        """Create and save a User with the given email and password."""
+        if not phone_number:
+            raise ValueError('The given phone_number must be set')
+        email = self.normalize_email(phone_number)
+        user = self.model(phone_number=phone_number, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_user(self, phone_number, password=None, **extra_fields):
+        """Create and save a regular User with the given email and password."""
+        extra_fields.setdefault('is_staff', False)
+        extra_fields.setdefault('is_active', False)
+        extra_fields.setdefault('is_superuser', False)
+        return self._create_user(phone_number, password, **extra_fields)
+
+    def create_superuser(self, phone_number, password, **extra_fields):
+        """Create and save a SuperUser with the given email and password."""
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self._create_user(phone_number, password, **extra_fields)
+
+
 class User(AbstractUser):
+    username = None
+
     gifts = models.IntegerField(verbose_name="Дары", default=0,
                                 validators=[MinValueValidator(settings.MIN_GIFTS_VALUE)])
     avatar = models.ImageField(verbose_name="Аватарка", upload_to="images/uploads/users/photo/",
@@ -26,7 +60,12 @@ class User(AbstractUser):
     abilities = models.ManyToManyField(Ability, max_length=10, blank=True)
     city = models.CharField(verbose_name="Город проживания", max_length=100, blank=True)
     district = models.CharField(verbose_name="Район проживания", max_length=100, blank=True)
-    phone_number = PhoneNumberField(verbose_name="Номер телефона", null=True, blank=True)
+    phone_number = models.CharField(verbose_name="Номер телефона", unique=True, max_length=20)
+
+    USERNAME_FIELD = 'phone_number'
+    REQUIRED_FIELDS = []
+
+    objects = UserManager()
 
     def last_seen(self):
         return cache.get('seen_%s' % self.username)
@@ -43,20 +82,3 @@ class User(AbstractUser):
         else:
             return False
 
-
-class RegistrationLinkGenerator(models.Model):
-    from community.models import Community
-    url_hash = models.CharField(default=uuid.uuid4().hex, max_length=64, editable=False)
-    alive_time = models.IntegerField(verbose_name="Время жизни ссылки(дни)", default=60)
-    created_at = models.DateTimeField(auto_now_add=True)
-    community_invited = models.ForeignKey(Community, verbose_name="Пригласившое сообщество", on_delete=models.CASCADE)
-
-    def __str__(self):
-        return settings.FRONTEND_HOST + "register/" + self.url_hash
-
-    def is_alive(self) -> bool:
-        """Вернёт true, если ссылка жива, иначе false"""
-        if not (self.created_at + timedelta(days=self.alive_time)).timestamp() <= datetime.now().timestamp():
-            return True
-
-        return False

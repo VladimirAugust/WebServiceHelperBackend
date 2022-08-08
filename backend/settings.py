@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 import os
 import environ
+from string import Template
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -30,6 +31,7 @@ SECRET_KEY = env("SECRET_KEY")
 DEBUG = env('DEBUG')
 
 DEVELOPMENT = env.bool('DEVELOPMENT', True)
+INFO_BOT_TOKEN = env.str('INFO_BOT_TOKEN', '')
 
 ALLOWED_HOSTS = ["194-67-91-36.cloudvps.regruhosting.ru", "194.67.91.36"] if not DEVELOPMENT else ["127.0.0.1"]
 
@@ -44,12 +46,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'account',
-    'community',
 
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
-    'phonenumber_field',
 ]
 
 AUTH_USER_MODEL = 'account.User'
@@ -74,8 +74,9 @@ CACHES = {
     }
 }
 
-USER_ONLINE_TIMEOUT = 180
-USER_LASTSEEN_TIMEOUT = 60 * 60 * 24 * 7
+USER_ONLINE_TIMEOUT = 180   # 3 mi
+USER_LASTSEEN_TIMEOUT = 60 * 60 * 24 * 7    # 1 week
+USER_CONFIRM_PHONE_NUMBER_TIMEOUT = 60 * 5  # 5 mi
 
 ROOT_URLCONF = 'backend.urls'
 
@@ -142,6 +143,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+CONFIRM_REGISTER_MESSAGE = Template('Спасибо за регистрацию на нашем сервесе. Код подтверждения: $code')
+CONFIRM_LOGIN_MESSAGE = Template('Код подтверждения: $code')
 # Минимальное кол-во даров у всех пользователей
 MIN_GIFTS_VALUE = -10
 
@@ -164,8 +168,6 @@ STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
-
 CORS_ALLOW_ALL_ORIGINS = False  # If this is used then `CORS_ALLOWED_ORIGINS` will not have any effect
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
