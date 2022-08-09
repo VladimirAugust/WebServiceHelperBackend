@@ -68,11 +68,10 @@ MIDDLEWARE = [
 ]
 
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'default-cache'
-    }
+    # read os.environ['CACHE_URL'] and raises ImproperlyConfigured exception if not found
+    'default': env.cache(),
 }
+
 
 USER_ONLINE_TIMEOUT = 180   # 3 mi
 USER_LASTSEEN_TIMEOUT = 60 * 60 * 24 * 7    # 1 week
