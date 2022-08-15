@@ -2,9 +2,6 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from django.core.cache import cache
-from django.conf import settings
-from .services.registration import generate_confirm_code, send_confirm_code
-from telebot.apihelper import ApiTelegramException
 
 
 User = get_user_model()
@@ -50,7 +47,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["balance", "avatar_url", "username"]
+        fields = ["balance", "avatar_url", "pk"]
 
     @staticmethod
     def get_balance(obj):
@@ -70,15 +67,10 @@ class UserSettingsSerializer(serializers.Serializer):
 
     email = serializers.SerializerMethodField("get_email")
     avatar = serializers.SerializerMethodField("get_avatar")
-    username = serializers.SerializerMethodField("get_username")
 
     @staticmethod
     def get_email(obj):
         return obj.email
-
-    @staticmethod
-    def get_username(obj: User):
-        return obj.username
 
     def get_avatar(self, obj: User):
         request = self.context.get("request")
@@ -94,16 +86,37 @@ class UserSettingsSerializer(serializers.Serializer):
         return instance
 
 
+class BlockUserSerializer(serializers.Serializer):
+    reason = serializers.CharField(required=True, max_length=1000, write_only=True)
+
+    def update(self, instance, validated_data):
+        instance.is_active = False
+        instance.block_reason = validated_data.get("reason")
+        instance.save()
+        return instance
+
+    # def validate(self, data):
+    #     if not data.get("reason"):
+    #         raise serializers.ValidationError({"reason": "Укажите причину"})
+    #
+    #     return data
+
+
 class UserInfoSerializer(serializers.ModelSerializer):
     is_current_user = serializers.SerializerMethodField("is_current_session_user")
     is_online = serializers.SerializerMethodField("is_user_online")
+    is_current_user_moderator = serializers.SerializerMethodField("is_current_user_staff")
 
     class Meta:
         model = User
-        fields = ("username", "avatar", "description", "is_current_user", "is_online")
+        fields = ("avatar", "description", "is_current_user", "is_online", "first_name", "is_current_user_moderator")
 
     def is_user_online(self, obj):
         return obj.is_online()
+
+    def is_current_user_staff(self, obj):
+        user = self.context.get("request").user
+        return user.is_staff
 
     def is_current_session_user(self, obj):
         """Check if current session user equals input user"""
@@ -113,85 +126,55 @@ class UserInfoSerializer(serializers.ModelSerializer):
                 return True
         return False
 
-
 class RegisterUserSerializer(serializers.Serializer):
-    phone_number = serializers.CharField(required=True, max_length=20)
-    code = serializers.CharField(max_length=50, required=False)
-    step = serializers.IntegerField(required=True, write_only=True)
+    token = serializers.CharField(max_length=255, read_only=True)
+    code = serializers.CharField(max_length=50, required=False, write_only=True)
 
     def create(self, validated_data):
         user = User.objects.create(
-            phone_number=validated_data.get('phone_number')
+            tg_id=validated_data.get('tg_id')
         )
-        return user
+        user.save()
+        token = Token.objects.create(user=user)
+
+        return {
+            "token": token.key
+        }
 
     def validate(self, data):
-        step = data.get('step')
-        phone_number = data.get('phone_number')
-        try:
-            User.objects.get(phone_number=phone_number)
-            raise serializers.ValidationError({"phone_number": "Пользователь с таким номером телефона уже существует"})
-        except User.DoesNotExist:
-            pass
-
-        if step == 1:   # set phone number
-            code = generate_confirm_code()
-            cache.set(f'register_{phone_number}', code, settings.USER_CONFIRM_PHONE_NUMBER_TIMEOUT)
-            try:
-                send_confirm_code(phone_number, code, settings.CONFIRM_REGISTER_MESSAGE)
-            except ApiTelegramException:
-                raise serializers.ValidationError({"phone_number": "Такого номера не существует"})
-            return data
+        code = data.get('code')
+        if not code:
+            raise serializers.ValidationError({'code': 'Код не указан!'})
+        tg_id = cache.get(f'register_code_{code}')
+        if tg_id:
+            cache.delete(f'register_code_{code}')
+            return {
+                "tg_id": tg_id
+            }
         else:
-            code = data.get('code')
-            if not code:
-                raise serializers.ValidationError('Код не указан!')
-            confirm_code = cache.get(f'register_{phone_number}')
-            if code == confirm_code:
-                return data
-            else:
-                raise serializers.ValidationError('Код неверный')
+            raise serializers.ValidationError({'code': 'Код неверный'})
 
 
 class LoginSerializer(serializers.Serializer):
-    phone_number = serializers.CharField(max_length=20, required=True)
     code = serializers.CharField(max_length=50, write_only=True, required=False)
-    step = serializers.IntegerField(required=True, write_only=True)
     token = serializers.CharField(max_length=255, read_only=True)
 
     def validate(self, data):
-        phone_number = data.get('phone_number')
-        step = data.get('step')
+        code = data.get('code')
+        if not code:
+            raise serializers.ValidationError({'code': 'Код не указан!'})
+        tg_id = cache.get(f'login_code_{code}')
+        if tg_id:
+            cache.delte(f'login_code_{code}')
+            user = User.objects.get(tg_id=tg_id)
+            if not user.is_active:
+                raise serializers.ValidationError(
+                    'Пользователь был заблокирован'
+                )
+            token, _ = Token.objects.get_or_create(user=user)
 
-        try:
-            user = User.objects.get(phone_number=phone_number)
-        except User.DoesNotExist:
-            raise serializers.ValidationError("Пользователь с таким номером телефона не найден!")
-
-        if not user.is_active:
-            raise serializers.ValidationError(
-                'Пользователь был деактивирован'
-            )
-
-        if step == 1:
-            code = generate_confirm_code()
-            cache.set(f'login_{phone_number}', code, settings.USER_CONFIRM_PHONE_NUMBER_TIMEOUT)
-            try:
-                send_confirm_code(phone_number, code, settings.CONFIRM_LOGIN_MESSAGE)
-            except ApiTelegramException:
-                raise serializers.ValidationError({"phone_number": "Такого номера не существует"})
-            return data
+            return {
+                'token': token
+            }
         else:
-            code = data.get('code')
-            if not code:
-                raise serializers.ValidationError('Код не указан!')
-            confirm_code = cache.get(f'login_{phone_number}')
-            if code == confirm_code:
-                token, _ = Token.objects.get_or_create(user=user)
-
-                return {
-                    'phone_number': user.phone_number,
-                    'token': token
-                }
-            else:
-                raise serializers.ValidationError('Код неверный')
+            raise serializers.ValidationError({'code': 'Код неверный'})

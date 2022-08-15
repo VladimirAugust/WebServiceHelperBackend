@@ -74,10 +74,9 @@ CACHES = {
     'default': env.cache(),
 }
 
-
 USER_ONLINE_TIMEOUT = 180   # 3 mi
 USER_LASTSEEN_TIMEOUT = 60 * 60 * 24 * 7    # 1 week
-USER_CONFIRM_PHONE_NUMBER_TIMEOUT = 60 * 5  # 5 mi
+USER_CONFIRM_TG_TIMEOUT = 60 * 5  # 5 mi
 
 ROOT_URLCONF = 'backend.urls'
 
