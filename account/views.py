@@ -1,14 +1,34 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, BasePermission
 from .serializers import (RegisterUserSerializer, UserChangeAvatarSerializer, LoginSerializer, \
-                          UserSettingsSerializer, ProfileSerializer, UserPasswordChangeSerializer, UserInfoSerializer)
+                          UserSettingsSerializer, ProfileSerializer, UserPasswordChangeSerializer, UserInfoSerializer, \
+                          BlockUserSerializer)
 from django.contrib.auth import get_user_model
-from .services.user_services import get_user_by_name
 
 
 User = get_user_model()
+
+
+class IsModerator(BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_staff
+
+
+class BlockUserAPIView(generics.UpdateAPIView):
+    model = User
+    permission_classes = (IsModerator,)
+    serializer_class = BlockUserSerializer
+
+    def get_object(self, queryset=None):
+        pk = self.request.data.get("pk")
+        if pk:
+            instance = User.objects.get(pk=pk)
+        else:
+            instance = None
+        print(pk)
+        return instance
 
 
 class UploadAvatarAPIView(generics.UpdateAPIView):
@@ -78,9 +98,9 @@ class UserInfoAPIView(APIView):
     permission_classes = (AllowAny,)
     serializer_class = UserInfoSerializer
 
-    def get(self, request, username):
+    def get(self, request, pk):
         try:
-            user = get_user_by_name(username)
+            user = User.objects.get(pk=pk)
         except User.DoesNotExist:
             return Response({}, status=status.HTTP_404_NOT_FOUND)
 

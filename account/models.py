@@ -18,24 +18,23 @@ class UserManager(BaseUserManager):
 
     use_in_migrations = True
 
-    def _create_user(self, phone_number, password, **extra_fields):
+    def _create_user(self, tg_id, password, **extra_fields):
         """Create and save a User with the given email and password."""
-        if not phone_number:
+        if not tg_id:
             raise ValueError('The given phone_number must be set')
-        email = self.normalize_email(phone_number)
-        user = self.model(phone_number=phone_number, **extra_fields)
+        user = self.model(tg_id=tg_id, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_user(self, phone_number, password=None, **extra_fields):
+    def create_user(self, tg_id, password=None, **extra_fields):
         """Create and save a regular User with the given email and password."""
         extra_fields.setdefault('is_staff', False)
         extra_fields.setdefault('is_active', False)
         extra_fields.setdefault('is_superuser', False)
-        return self._create_user(phone_number, password, **extra_fields)
+        return self._create_user(tg_id, password, **extra_fields)
 
-    def create_superuser(self, phone_number, password, **extra_fields):
+    def create_superuser(self, tg_id, password, **extra_fields):
         """Create and save a SuperUser with the given email and password."""
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
@@ -45,7 +44,7 @@ class UserManager(BaseUserManager):
         if extra_fields.get('is_superuser') is not True:
             raise ValueError('Superuser must have is_superuser=True.')
 
-        return self._create_user(phone_number, password, **extra_fields)
+        return self._create_user(tg_id, password, **extra_fields)
 
 
 class User(AbstractUser):
@@ -60,9 +59,13 @@ class User(AbstractUser):
     abilities = models.ManyToManyField(Ability, max_length=10, blank=True)
     city = models.CharField(verbose_name="Город проживания", max_length=100, blank=True)
     district = models.CharField(verbose_name="Район проживания", max_length=100, blank=True)
-    phone_number = models.CharField(verbose_name="Номер телефона", unique=True, max_length=20)
+    tg_id = models.CharField(verbose_name="id телеграм", unique=True, max_length=20)
+    phone_number = models.CharField(verbose_name="Номер телефона", unique=True, max_length=20, null=True, blank=True)
 
-    USERNAME_FIELD = 'phone_number'
+    block_reason = models.TextField(verbose_name="Причина блокировки", max_length=1000,
+                                    default="Пользователь не заблокирован")
+
+    USERNAME_FIELD = 'tg_id'
     REQUIRED_FIELDS = []
 
     objects = UserManager()

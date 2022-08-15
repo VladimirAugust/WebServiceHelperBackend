@@ -69,14 +69,14 @@ MIDDLEWARE = [
 
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'default-cache'
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(BASE_DIR, 'cache')
     }
 }
 
 USER_ONLINE_TIMEOUT = 180   # 3 mi
 USER_LASTSEEN_TIMEOUT = 60 * 60 * 24 * 7    # 1 week
-USER_CONFIRM_PHONE_NUMBER_TIMEOUT = 60 * 5  # 5 mi
+USER_CONFIRM_TG_TIMEOUT = 60 * 5  # 5 mi
 
 ROOT_URLCONF = 'backend.urls'
 
