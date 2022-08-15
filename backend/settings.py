@@ -30,7 +30,7 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-DEVELOPMENT = env.bool('DEVELOPMENT', True)
+DEVELOPMENT = env.bool('DEVELOPMENT', False)
 INFO_BOT_TOKEN = env.str('INFO_BOT_TOKEN', '')
 
 ALLOWED_HOSTS = ["194-67-91-36.cloudvps.regruhosting.ru", "194.67.91.36"] if not DEVELOPMENT else ["127.0.0.1"]
@@ -46,10 +46,12 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'account',
+    'trade',
 
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
+    'adminsortable2',
 ]
 
 AUTH_USER_MODEL = 'account.User'
@@ -68,10 +70,8 @@ MIDDLEWARE = [
 ]
 
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': os.path.join(BASE_DIR, 'cache')
-    }
+    # read os.environ['CACHE_URL'] and raises ImproperlyConfigured exception if not found
+    'default': env.cache(),
 }
 
 USER_ONLINE_TIMEOUT = 180   # 3 mi
@@ -147,7 +147,8 @@ AUTH_PASSWORD_VALIDATORS = [
 CONFIRM_REGISTER_MESSAGE = Template('Спасибо за регистрацию на нашем сервесе. Код подтверждения: $code')
 CONFIRM_LOGIN_MESSAGE = Template('Код подтверждения: $code')
 # Минимальное кол-во даров у всех пользователей
-MIN_GIFTS_VALUE = -10
+MIN_GIFTS_VALUE = 0
+MODERATION_AFTER_CHANGES = True
 
 LANGUAGE_CODE = 'en-us'
 
