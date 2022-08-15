@@ -54,7 +54,9 @@ class Good(models.Model):
         DRAFT = 0, "Черновик"
         MODERATION = 1, "На модерации",
         MODERATION_DISALLOW = 2, "Запрещено модератором",
-        PUBLISHED = 3, "Опубликовано"
+        PUBLISHED = 3, "Опубликовано",
+        DELETED = 4, "Удалено",
+        SOLD = 5, "Продано",
     state = models.PositiveSmallIntegerField("Состояние", choices=PublishState.choices, default=PublishState.DRAFT)
 
     moderation_disallow_reason = models.TextField("Причина отказа модератором", blank=True)

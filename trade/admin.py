@@ -18,4 +18,6 @@ class GoodCategoryAdmin(SortableAdminMixin, admin.ModelAdmin):
 
 @admin.register(Good)
 class GoodAdmin(admin.ModelAdmin):
-    pass
+    list_display = ("id", "name", "type", "category", "updated_at")
+    search_fields = ("name", "id__iexact")
+

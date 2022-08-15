@@ -50,13 +50,41 @@ class GoodsViewSet(mixins.ListModelMixin,
         return Response(serializer.data)
 
     def perform_update(self, serializer):
-        if settings.MODERATION_AFTER_CHANGES and self._find_diffs(serializer):
-            serializer.save(state=Good.PublishState.MODERATION)
+        action = self.request.query_params.get('action', '').lower()
+        if action not in ('publish', 'draft', 'delete', 'sold'):
+            raise serializers.ValidationError({"action": "should be publish/draft/delete/sold"})
+        old_state = self.get_object().state
+
+        if action == 'draft':
+            return serializer.save(state=Good.PublishState.DRAFT)
+
+        if action == 'delete':
+            return serializer.save(state=Good.PublishState.DELETED)
+
+        if action == 'sold':
+            return serializer.save(state=Good.PublishState.SOLD)
+
+        # else: action=='publish'
+        if settings.MODERATION_AFTER_CHANGES:
+            if old_state == Good.PublishState.PUBLISHED and not self._find_diffs(serializer):
+                return serializer.save(state=Good.PublishState.PUBLISHED)
+            # all the other cases: from Draft to Publish or from Publish with changes to Publish
+            return serializer.save(state=Good.PublishState.MODERATION)
         else:
-            serializer.save()
+            serializer.save(state=Good.PublishState.PUBLISHED)
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user, state=Good.PublishState.MODERATION)
+        action = self.request.query_params.get('action', '').lower()
+        if action not in ('publish', 'draft'):
+            raise serializers.ValidationError({"action": "should be publish/draft"})
+
+        if action == 'draft':
+            return serializer.save(state=Good.PublishState.DRAFT)
+
+        if settings.MODERATION_AFTER_CHANGES:
+            serializer.save(user=self.request.user, state=Good.PublishState.MODERATION)
+        else:
+            serializer.save(user=self.request.user, state=Good.PublishState.PUBLISHED)
 
     def _find_diffs(self, serializer):
         for key, value in serializer.validated_data.items():
