@@ -1,8 +1,15 @@
 from decimal import Decimal
 
+from django.conf import settings
 from django.contrib import auth
+from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import signals
+from django.dispatch import receiver
+from django.template import loader
+
+from common.services.telegram import multiple_send_msg
 
 
 class GoodCategory(models.Model):
@@ -81,3 +88,16 @@ class Good(models.Model):
 
     def __str__(self):
         return f"{self.name} (id{self.id} {dict(self.PublishState.choices)[self.state]})"
+
+
+@receiver(signals.post_save, sender=Good, dispatch_uid='good_updating')
+def good_updated(sender, instance, created, **kwargs):
+    from django.urls import reverse
+
+    if instance.state == Good.PublishState.MODERATION:
+        users = get_user_model().objects.filter(groups__id=settings.GROUP_GOODS_MODERATOR_ID)
+        template = loader.get_template('telegram/good_moderation_notify.html')
+        name = f"Id{instance.id} ({instance.type}) {instance.name}"
+        url = settings.SITE_DOMAIN + reverse('admin:trade_good_change', args=(instance.id,))
+
+        multiple_send_msg(users, template.render({"url": url, "name": name}), parse_mode="HTML")

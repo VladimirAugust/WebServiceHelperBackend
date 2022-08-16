@@ -18,3 +18,4 @@ tzdata==2021.5
 whitenoise==5.3.0
 django-admin-sortable2==2.1
 pyTelegramBotAPI==4.6.1
+django-redis=5.2.0

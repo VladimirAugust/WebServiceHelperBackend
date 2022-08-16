@@ -2,12 +2,9 @@ from account.models import User
 from account.exceptions import UserAlreadyExist
 from rest_framework.authtoken.models import Token
 from django.utils.crypto import get_random_string
-from .telegram_service import send_message
 
 
-def send_confirm_code(receiver_id, code, template):
-    msg = template.substitute(code=code)
-    send_message(receiver_id, msg)
+
 
 
 def generate_confirm_code():

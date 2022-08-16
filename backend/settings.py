@@ -28,12 +28,22 @@ environ.Env.read_env()
 SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
-
+DEBUG = env('DEBUG', False)
 DEVELOPMENT = env.bool('DEVELOPMENT', False)
-INFO_BOT_TOKEN = env.str('INFO_BOT_TOKEN', '')
 
 ALLOWED_HOSTS = ["194-67-91-36.cloudvps.regruhosting.ru", "194.67.91.36"] if not DEVELOPMENT else ["127.0.0.1"]
+
+INFO_BOT_TOKEN = env.str('INFO_BOT_TOKEN', '')
+try:
+    GROUP_GOODS_MODERATOR_ID = env.int("GROUP_GOODS_MODERATOR_ID")
+except ValueError:
+    GROUP_GOODS_MODERATOR_ID = -1
+SITE_DOMAIN = env.str('SITE_DOMAIN')
+CONFIRM_REGISTER_MESSAGE = Template('Спасибо за регистрацию на нашем сервесе. Код подтверждения: $code')
+CONFIRM_LOGIN_MESSAGE = Template('Код подтверждения: $code')
+MIN_GIFTS_VALUE = 0 # Минимальное кол-во даров у всех пользователей
+MODERATION_AFTER_CHANGES = True # Необходимость модерировать новые/измененные товары/услуги
+
 
 # Application definition
 
@@ -144,15 +154,41 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-CONFIRM_REGISTER_MESSAGE = Template('Спасибо за регистрацию на нашем сервесе. Код подтверждения: $code')
-CONFIRM_LOGIN_MESSAGE = Template('Код подтверждения: $code')
-# Минимальное кол-во даров у всех пользователей
-MIN_GIFTS_VALUE = 0
-MODERATION_AFTER_CHANGES = True
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module}:{funcName}:{lineno} process:{process:d} thread:{thread:d}:\n{message}\n'+('-'*30),
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'logs/server.log',
+            'formatter': 'verbose'
+        },
+    },
+    'root': {
+        'handlers': ['console', 'file'],
+        'level': 'INFO',
+    },
+}
+
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 

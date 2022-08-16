@@ -165,7 +165,7 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError({'code': 'Код не указан!'})
         tg_id = cache.get(f'login_code_{code}')
         if tg_id:
-            cache.delte(f'login_code_{code}')
+            cache.delete(f'login_code_{code}')
             user = User.objects.get(tg_id=tg_id)
             if not user.is_active:
                 raise serializers.ValidationError(
