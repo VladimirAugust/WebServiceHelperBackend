@@ -26,7 +26,7 @@ def login(message):
     try:
         User.objects.get(tg_id=message.chat.id)
     except User.DoesNotExist:
-        bot.send_message(message.chat.id, 'Сначало пройдите регистрацию на сайте!')
+        bot.send_message(message.chat.id, 'Сначала пройдите регистрацию на сайте!')
         return
 
     cache_code = cache.get(f'login_tg_{message.chat.id}')

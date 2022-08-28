@@ -1,6 +1,7 @@
-from django.conf import settings
-from django.http import Http404
-from rest_framework import mixins
+from django.forms import ModelForm
+from django.http import Http404, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework import mixins, decorators
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -55,6 +56,7 @@ class GoodsViewSet(mixins.ListModelMixin,
             raise serializers.ValidationError({"action": "should be publish/draft/delete/sold"})
         old_state = self.get_object().state
 
+        img_changes = self._update_images(serializer)
         if action == 'draft':
             return serializer.save(state=Good.PublishState.DRAFT)
 
@@ -66,7 +68,7 @@ class GoodsViewSet(mixins.ListModelMixin,
 
         # else: action=='publish'
         if settings.MODERATION_AFTER_CHANGES:
-            if old_state == Good.PublishState.PUBLISHED and not self._find_diffs(serializer):
+            if old_state == Good.PublishState.PUBLISHED and not self._find_diffs(serializer) and not img_changes:
                 return serializer.save(state=Good.PublishState.PUBLISHED)
             # all the other cases: from Draft to Publish or from Publish with changes to Publish
             return serializer.save(state=Good.PublishState.MODERATION)
@@ -79,15 +81,79 @@ class GoodsViewSet(mixins.ListModelMixin,
             raise serializers.ValidationError({"action": "should be publish/draft"})
 
         if action == 'draft':
-            return serializer.save(state=Good.PublishState.DRAFT)
-
+            return self._save_with_updating_images(serializer, Good.PublishState.DRAFT)
         if settings.MODERATION_AFTER_CHANGES:
-            serializer.save(user=self.request.user, state=Good.PublishState.MODERATION)
+            return self._save_with_updating_images(serializer, Good.PublishState.MODERATION)
         else:
-            serializer.save(user=self.request.user, state=Good.PublishState.PUBLISHED)
+            return self._save_with_updating_images(serializer, Good.PublishState.PUBLISHED)
+
+    def _save_with_updating_images(self, serializer, state):
+        if 'images' in serializer.validated_data:
+            images_ids = serializer.validated_data['images']
+            del serializer.validated_data['images']
+        else:
+            images_ids = []
+        new_obj = serializer.save(user=self.request.user, state=state)
+        self._set_good_for_new_images(new_obj.id, images_ids)
+        return new_obj
+
+    def _update_images(self, serializer):
+        if 'images' not in serializer.validated_data:
+            return False
+        old_images = list(self.get_object().images.all())
+        new_images = serializer.validated_data['images']
+        del serializer.validated_data['images']
+        changes = set(new_images) != set(map(lambda x: x.id, old_images))
+        if not changes:
+            return False
+
+        id = self.get_object().id
+        for image in old_images:
+            if image.id not in new_images:
+                image.delete()
+        self._set_good_for_new_images(id, new_images)
+        return True
+
+
+    def _set_good_for_new_images(self, good_id, images_ids):
+        for i in images_ids:
+            image = UploadedImage.objects.get(pk=i)
+            image.good = Good.objects.get(pk=good_id)
+            image.save()
 
     def _find_diffs(self, serializer):
         for key, value in serializer.validated_data.items():
             if getattr(self.get_object(), key) != value:
                 return True
         return False
+
+
+class GoodImages(APIView):
+    permission_classes = []
+    def get(self, request, good_id):
+        queryset = UploadedImage.objects.filter(good__id=good_id)
+        serializer = UploadedImageSerializer(queryset, many=True)
+        return Response({
+            "media": serializer.data
+        })
+
+
+@csrf_exempt
+def upload_image_view(request):
+    class ImageForm(ModelForm):
+        class Meta:
+            model = UploadedImage
+            fields = ('image',)
+
+    if request.FILES:
+        form = ImageForm(request.POST, request.FILES)
+        if form.is_valid():
+            inst = form.save()
+            return JsonResponse({'success': True, 'name': inst.id})
+
+    return JsonResponse({'success': False})
+
+class GoodForm(ModelForm):
+    class Meta:
+        model = Good
+        fields = '__all__'

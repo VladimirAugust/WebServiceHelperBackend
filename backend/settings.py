@@ -32,6 +32,7 @@ DEBUG = env('DEBUG', False)
 DEVELOPMENT = env.bool('DEVELOPMENT', False)
 
 ALLOWED_HOSTS = ["194-67-91-36.cloudvps.regruhosting.ru", "194.67.91.36"] if not DEVELOPMENT else ["127.0.0.1"]
+CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8080"]
 
 INFO_BOT_TOKEN = env.str('INFO_BOT_TOKEN', '')
 try:
@@ -57,6 +58,7 @@ INSTALLED_APPS = [
 
     'account',
     'trade',
+    'common',
 
     'rest_framework',
     'rest_framework.authtoken',
@@ -190,7 +192,7 @@ LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'Europe/Moscow'
 
-USE_I18N = True
+USE_I18N = False
 
 USE_TZ = True
 
