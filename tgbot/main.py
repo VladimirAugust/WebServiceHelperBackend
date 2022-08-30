@@ -15,9 +15,15 @@ def start_message(message):
         return
     except User.DoesNotExist:
         pass
-    code = generate_confirm_code()
+    cache_code = cache.get(f'login_tg_{message.chat.id}')
+    if not cache_code:
+        code = generate_confirm_code()
+        cache.set(f'register_code_{code}', message.chat.id, settings.USER_CONFIRM_TG_TIMEOUT)
+        cache.set(f'register_tg_{message.chat.id}', code, settings.USER_CONFIRM_TG_TIMEOUT)
+
+    else:
+        code = cache_code
     msg = settings.CONFIRM_REGISTER_MESSAGE.substitute(code=code)
-    cache.set(f'register_code_{code}', message.chat.id, settings.USER_CONFIRM_TG_TIMEOUT)
     bot.send_message(message.chat.id, msg)
 
 

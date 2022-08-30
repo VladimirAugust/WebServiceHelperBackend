@@ -1,0 +1,310 @@
+INFO 2022-08-17 15:08:16,713 autoreload:run_with_reloader:677 process:3214 thread:4515976704:
+Watching for file changes with StatReloader
+------------------------------
+INFO 2022-08-17 15:11:31,751 autoreload:run_with_reloader:677 process:3301 thread:4337952256:
+Watching for file changes with StatReloader
+------------------------------
+INFO 2022-08-17 15:12:40,782 autoreload:run_with_reloader:677 process:3347 thread:4631062016:
+Watching for file changes with StatReloader
+------------------------------
+INFO 2022-08-17 15:18:06,544 autoreload:run_with_reloader:677 process:3417 thread:4627056128:
+Watching for file changes with StatReloader
+------------------------------
+INFO 2022-08-17 15:20:35,712 autoreload:run_with_reloader:677 process:3486 thread:4402722304:
+Watching for file changes with StatReloader
+------------------------------
+INFO 2022-08-17 15:21:00,053 autoreload:run_with_reloader:677 process:3512 thread:4672681472:
+Watching for file changes with StatReloader
+------------------------------
+INFO 2022-08-17 16:20:36,953 autoreload:run_with_reloader:677 process:4093 thread:4320122368:
+Watching for file changes with StatReloader
+------------------------------
+INFO 2022-08-17 16:21:09,511 autoreload:run_with_reloader:677 process:4122 thread:4605027840:
+Watching for file changes with StatReloader
+------------------------------
+INFO 2022-08-17 16:21:33,901 autoreload:run_with_reloader:677 process:4145 thread:4463547904:
+Watching for file changes with StatReloader
+------------------------------
+INFO 2022-08-17 16:32:32,890 autoreload:run_with_reloader:677 process:4527 thread:4562306560:
+Watching for file changes with StatReloader
+------------------------------
+WARNING 2022-08-17 16:34:40,301 log:log_response:241 process:4527 thread:123145553170432:
+Bad Request: /api/login
+------------------------------
+WARNING 2022-08-17 16:35:51,254 log:log_response:241 process:4527 thread:123145553170432:
+Bad Request: /api/login
+------------------------------
+WARNING 2022-08-17 16:37:44,298 log:log_response:241 process:4527 thread:123145553170432:
+Bad Request: /api/login
+------------------------------
+INFO 2022-08-17 16:38:34,461 autoreload:trigger_reload:266 process:4527 thread:4562306560:
+/Users/rumin/Documents/sociity/backend/account/serializers.py changed, reloading.
+------------------------------
+INFO 2022-08-17 16:38:35,890 autoreload:run_with_reloader:677 process:4615 thread:4496418304:
+Watching for file changes with StatReloader
+------------------------------
+WARNING 2022-08-17 16:38:41,084 log:log_response:241 process:4615 thread:123145456795648:
+Bad Request: /api/login
+------------------------------
+WARNING 2022-08-17 16:38:50,435 log:log_response:241 process:4615 thread:123145456795648:
+Bad Request: /api/login
+------------------------------
+ERROR 2022-08-17 16:39:33,878 log:log_response:241 process:4615 thread:123145456795648:
+Internal Server Error: /api/register
+------------------------------
+Traceback (most recent call last):
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/db/backends/sqlite3/base.py", line 357, in execute
+    return Database.Cursor.execute(self, query, params)
+sqlite3.IntegrityError: NOT NULL constraint failed: account_user.is_block
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/views/decorators/csrf.py", line 54, in wrapped_view
+    return view_func(*args, **kwargs)
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/views/generic/base.py", line 103, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+  File "/Users/rumin/Documents/sociity/backend/account/views.py", line 125, in post
+    serializer.save()
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/rest_framework/serializers.py", line 212, in save
+    self.instance = self.create(validated_data)
+  File "/Users/rumin/Documents/sociity/backend/account/serializers.py", line 134, in create
+    user = User.objects.create(
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/db/models/query.py", line 671, in create
+    obj.save(force_insert=True, using=self.db)
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/contrib/auth/base_user.py", line 68, in save
+    super().save(*args, **kwargs)
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/db/models/base.py", line 831, in save
+    self.save_base(
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/db/models/base.py", line 882, in save_base
+    updated = self._save_table(
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/db/models/base.py", line 1025, in _save_table
+    results = self._do_insert(
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/db/models/base.py", line 1066, in _do_insert
+    return manager._insert(
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/db/models/query.py", line 1790, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/db/models/sql/compiler.py", line 1657, in execute_sql
+    cursor.execute(sql, params)
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/db/backends/utils.py", line 103, in execute
+    return super().execute(sql, params)
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/db/backends/utils.py", line 67, in execute
+    return self._execute_with_wrappers(
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/db/backends/utils.py", line 80, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/db/backends/utils.py", line 84, in _execute
+    with self.db.wrap_database_errors:
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/db/utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/db/backends/utils.py", line 89, in _execute
+    return self.cursor.execute(sql, params)
+  File "/Users/rumin/Documents/sociity/backend/env/lib/python3.10/site-packages/django/db/backends/sqlite3/base.py", line 357, in execute
+    return Database.Cursor.execute(self, query, params)
+django.db.utils.IntegrityError: NOT NULL constraint failed: account_user.is_block
+INFO 2022-08-17 16:41:12,219 autoreload:run_with_reloader:677 process:4678 thread:4409632256:
+Watching for file changes with StatReloader
+------------------------------
+WARNING 2022-08-17 16:41:13,941 log:log_response:241 process:4678 thread:123145393029120:
+Bad Request: /api/register
+------------------------------
+WARNING 2022-08-17 16:44:02,639 log:log_response:241 process:4678 thread:123145393029120:
+Not Found: /favicon.ico
+------------------------------
+WARNING 2022-08-17 16:45:32,228 log:log_response:241 process:4678 thread:123145493766144:
+Unauthorized: /api/profile
+------------------------------
+WARNING 2022-08-17 16:46:31,408 log:log_response:241 process:4678 thread:123145393029120:
+Not Found: /api/user/2
+------------------------------
+INFO 2022-08-17 16:50:53,821 autoreload:run_with_reloader:677 process:4846 thread:4567488000:
+Watching for file changes with StatReloader
+------------------------------
+INFO 2022-08-17 16:55:00,823 autoreload:trigger_reload:266 process:4846 thread:4567488000:
+/Users/rumin/Documents/sociity/backend/account/serializers.py changed, reloading.
+------------------------------
+INFO 2022-08-18 15:44:35,443 autoreload:run_with_reloader:677 process:890 thread:4448273920:
+Watching for file changes with StatReloader
+------------------------------
+WARNING 2022-08-18 15:49:24,129 log:log_response:241 process:890 thread:123145635205120:
+Bad Request: /api/login
+------------------------------
+WARNING 2022-08-18 15:49:31,662 log:log_response:241 process:890 thread:123145635205120:
+Bad Request: /api/login
+------------------------------
+WARNING 2022-08-18 15:49:40,637 log:log_response:241 process:890 thread:123145635205120:
+Bad Request: /api/login
+------------------------------
+WARNING 2022-08-18 15:49:53,391 log:log_response:241 process:890 thread:123145635205120:
+Bad Request: /api/login
+------------------------------
+INFO 2022-08-18 15:51:09,198 autoreload:trigger_reload:266 process:890 thread:4448273920:
+/Users/rumin/Documents/sociity/backend/account/serializers.py changed, reloading.
+------------------------------
+INFO 2022-08-18 15:51:10,437 autoreload:run_with_reloader:677 process:1038 thread:4769830400:
+Watching for file changes with StatReloader
+------------------------------
+WARNING 2022-08-18 15:58:53,526 log:log_response:241 process:1038 thread:123145550118912:
+Unauthorized: /api/settings
+------------------------------
+WARNING 2022-08-18 16:00:55,150 log:log_response:241 process:1038 thread:123145550118912:
+Unauthorized: /api/settings
+------------------------------
+WARNING 2022-08-18 16:23:29,227 log:log_response:241 process:1038 thread:123145550118912:
+Not Found: /
+------------------------------
+WARNING 2022-08-18 16:23:29,341 log:log_response:241 process:1038 thread:123145550118912:
+Not Found: /favicon.ico
+------------------------------
+INFO 2022-08-18 16:31:06,468 autoreload:trigger_reload:266 process:1038 thread:4769830400:
+/Users/rumin/Documents/sociity/backend/account/serializers.py changed, reloading.
+------------------------------
+INFO 2022-08-18 16:31:08,196 autoreload:run_with_reloader:677 process:1438 thread:4632585728:
+Watching for file changes with StatReloader
+------------------------------
+INFO 2022-08-26 15:24:13,114 autoreload:run_with_reloader:677 process:649 thread:4688262656:
+Watching for file changes with StatReloader
+------------------------------
+WARNING 2022-08-26 15:27:45,719 log:log_response:241 process:649 thread:123145621139456:
+Not Found: /favicon.ico
+------------------------------
+INFO 2022-08-30 22:11:43,625 autoreload:run_with_reloader:643 process:8876 thread:7604:
+Watching for file changes with StatReloader
+------------------------------
+INFO 2022-08-30 22:12:31,074 autoreload:run_with_reloader:643 process:2512 thread:1728:
+Watching for file changes with StatReloader
+------------------------------
+ERROR 2022-08-30 22:12:32,392 exception:response_for_exception:99 process:2512 thread:9564:
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+------------------------------
+WARNING 2022-08-30 22:12:32,452 log:log_response:225 process:2512 thread:9564:
+Bad Request: /
+------------------------------
+ERROR 2022-08-30 22:12:32,650 exception:response_for_exception:99 process:2512 thread:7380:
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+------------------------------
+WARNING 2022-08-30 22:12:32,686 log:log_response:225 process:2512 thread:7380:
+Bad Request: /favicon.ico
+------------------------------
+ERROR 2022-08-30 22:12:35,829 exception:response_for_exception:99 process:2512 thread:7164:
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+------------------------------
+WARNING 2022-08-30 22:12:35,863 log:log_response:225 process:2512 thread:7164:
+Bad Request: /admin/
+------------------------------
+ERROR 2022-08-30 22:12:36,625 exception:response_for_exception:99 process:2512 thread:752:
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+------------------------------
+WARNING 2022-08-30 22:12:36,653 log:log_response:225 process:2512 thread:752:
+Bad Request: /favicon.ico
+------------------------------
+INFO 2022-08-30 22:12:48,541 autoreload:trigger_reload:257 process:2512 thread:1728:
+C:\Users\Khaiam\PycharmProjects\webhelper\WebServiceHelperBackend\backend\settings.py changed, reloading.
+------------------------------
+INFO 2022-08-30 22:12:50,059 autoreload:run_with_reloader:643 process:10264 thread:8988:
+Watching for file changes with StatReloader
+------------------------------
+ERROR 2022-08-30 22:12:51,013 exception:response_for_exception:99 process:10264 thread:3288:
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+------------------------------
+WARNING 2022-08-30 22:12:51,060 log:log_response:225 process:10264 thread:3288:
+Bad Request: /admin/
+------------------------------
+ERROR 2022-08-30 22:12:51,124 exception:response_for_exception:99 process:10264 thread:5396:
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+------------------------------
+WARNING 2022-08-30 22:12:51,159 log:log_response:225 process:10264 thread:5396:
+Bad Request: /favicon.ico
+------------------------------
+ERROR 2022-08-30 22:12:51,646 exception:response_for_exception:99 process:10264 thread:9732:
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+------------------------------
+WARNING 2022-08-30 22:12:51,683 log:log_response:225 process:10264 thread:9732:
+Bad Request: /admin/
+------------------------------
+ERROR 2022-08-30 22:12:51,743 exception:response_for_exception:99 process:10264 thread:5792:
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+------------------------------
+WARNING 2022-08-30 22:12:51,777 log:log_response:225 process:10264 thread:5792:
+Bad Request: /favicon.ico
+------------------------------
+ERROR 2022-08-30 22:12:51,931 exception:response_for_exception:99 process:10264 thread:9448:
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+------------------------------
+WARNING 2022-08-30 22:12:51,965 log:log_response:225 process:10264 thread:9448:
+Bad Request: /admin/
+------------------------------
+ERROR 2022-08-30 22:12:52,026 exception:response_for_exception:99 process:10264 thread:4980:
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+------------------------------
+WARNING 2022-08-30 22:12:52,056 log:log_response:225 process:10264 thread:4980:
+Bad Request: /favicon.ico
+------------------------------
+ERROR 2022-08-30 22:12:52,123 exception:response_for_exception:99 process:10264 thread:10384:
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+------------------------------
+WARNING 2022-08-30 22:12:52,156 log:log_response:225 process:10264 thread:10384:
+Bad Request: /admin/
+------------------------------
+ERROR 2022-08-30 22:12:52,223 exception:response_for_exception:99 process:10264 thread:5960:
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+------------------------------
+WARNING 2022-08-30 22:12:52,253 log:log_response:225 process:10264 thread:5960:
+Bad Request: /favicon.ico
+------------------------------
+ERROR 2022-08-30 22:12:52,289 exception:response_for_exception:99 process:10264 thread:8228:
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+------------------------------
+WARNING 2022-08-30 22:12:52,318 log:log_response:225 process:10264 thread:8228:
+Bad Request: /admin/
+------------------------------
+ERROR 2022-08-30 22:12:52,378 exception:response_for_exception:99 process:10264 thread:8992:
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+------------------------------
+WARNING 2022-08-30 22:12:52,406 log:log_response:225 process:10264 thread:8992:
+Bad Request: /favicon.ico
+------------------------------
+INFO 2022-08-30 22:13:45,221 autoreload:run_with_reloader:643 process:4356 thread:10944:
+Watching for file changes with StatReloader
+------------------------------
+ERROR 2022-08-30 22:13:45,528 exception:response_for_exception:99 process:4356 thread:5000:
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+------------------------------
+WARNING 2022-08-30 22:13:45,579 log:log_response:225 process:4356 thread:5000:
+Bad Request: /admin/
+------------------------------
+ERROR 2022-08-30 22:13:45,647 exception:response_for_exception:99 process:4356 thread:11176:
+Invalid HTTP_HOST header: '127.0.0.1:8000'. You may need to add '127.0.0.1' to ALLOWED_HOSTS.
+------------------------------
+WARNING 2022-08-30 22:13:45,684 log:log_response:225 process:4356 thread:11176:
+Bad Request: /favicon.ico
+------------------------------
+INFO 2022-08-30 22:15:08,691 autoreload:trigger_reload:257 process:4356 thread:10944:
+C:\Users\Khaiam\PycharmProjects\webhelper\WebServiceHelperBackend\backend\settings.py changed, reloading.
+------------------------------
+INFO 2022-08-30 22:15:10,217 autoreload:run_with_reloader:643 process:1264 thread:9448:
+Watching for file changes with StatReloader
+------------------------------
+WARNING 2022-08-30 22:15:10,800 log:log_response:225 process:1264 thread:2208:
+Not Found: /favicon.ico
+------------------------------
+WARNING 2022-08-30 22:16:44,855 log:log_response:225 process:1264 thread:9776:
+Unauthorized: /api/settings
+------------------------------

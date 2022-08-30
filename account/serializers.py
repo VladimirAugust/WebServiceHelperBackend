@@ -47,7 +47,7 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["balance", "avatar_url", "pk"]
+        fields = ["balance", "avatar_url", "pk", "first_name"]
 
     @staticmethod
     def get_balance(obj):
@@ -94,12 +94,6 @@ class BlockUserSerializer(serializers.Serializer):
         instance.block_reason = validated_data.get("reason")
         instance.save()
         return instance
-
-    # def validate(self, data):
-    #     if not data.get("reason"):
-    #         raise serializers.ValidationError({"reason": "Укажите причину"})
-    #
-    #     return data
 
 
 class UserInfoSerializer(serializers.ModelSerializer):
@@ -165,6 +159,7 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError({'code': 'Код не указан!'})
         tg_id = cache.get(f'login_code_{code}')
         if tg_id:
+            cache.delete(f'login_tg_{tg_id}')
             cache.delete(f'login_code_{code}')
             user = User.objects.get(tg_id=tg_id)
             if not user.is_active:
