@@ -115,9 +115,10 @@ class UserInfoSerializer(serializers.ModelSerializer):
     def is_current_session_user(self, obj):
         """Check if current session user equals input user"""
         current_session_user = self.context.get("request").user
-        return obj and current_session_user and current_session_user == obj
-        # TODO: test it
-
+        if obj and current_session_user:
+            if current_session_user == obj:
+                return True
+        return False
 
 class RegisterUserSerializer(serializers.Serializer):
     token = serializers.CharField(max_length=255, read_only=True)
@@ -139,14 +140,13 @@ class RegisterUserSerializer(serializers.Serializer):
         if not code:
             raise serializers.ValidationError({'code': 'Код не указан!'})
         tg_id = cache.get(f'register_code_{code}')
-
-        if not tg_id:
+        if tg_id:
+            cache.delete(f'register_code_{code}')
+            return {
+                "tg_id": tg_id
+            }
+        else:
             raise serializers.ValidationError({'code': 'Код неверный'})
-
-        cache.delete(f'register_code_{code}')
-        return {
-            "tg_id": tg_id
-        }
 
 
 class LoginSerializer(serializers.Serializer):
@@ -159,18 +159,18 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError({'code': 'Код не указан!'})
 
         tg_id = cache.get(f'login_code_{code}')
-        if not tg_id:
+        if tg_id:
+            cache.delete(f'login_tg_{tg_id}')
+            cache.delete(f'login_code_{code}')
+            user = User.objects.get(tg_id=tg_id)
+            if not user.is_active:
+                raise serializers.ValidationError(
+                    'Пользователь был заблокирован'
+                )
+            token, _ = Token.objects.get_or_create(user=user)
+
+            return {
+                'token': token
+            }
+        else:
             raise serializers.ValidationError({'code': 'Код неверный'})
-
-        cache.delete(f'login_tg_{tg_id}')
-        cache.delete(f'login_code_{code}')
-        user = User.objects.get(tg_id=tg_id)
-        if not user.is_active:
-            raise serializers.ValidationError(
-                {'code': 'Пользователь был заблокирован по причине: ' + user.block_reason}
-            )
-        token, _ = Token.objects.get_or_create(user=user)
-
-        return {
-            'token': token
-        }
