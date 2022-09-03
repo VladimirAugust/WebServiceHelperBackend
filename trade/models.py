@@ -23,7 +23,6 @@ class GoodCategory(models.Model):
         verbose_name_plural = 'Категории товаров/услуг'
         ordering = ['sort_order']
 
-
     @property
     def parents(self):
         parents = []
