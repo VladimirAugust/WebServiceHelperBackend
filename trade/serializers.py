@@ -12,6 +12,7 @@ class GoodCategorySerializer(serializers.ModelSerializer):
 class GoodSerializer(serializers.ModelSerializer):
     images = serializers.JSONField(write_only=True, required=False)
     images_for_read = serializers.SerializerMethodField('get_images')
+    is_author = serializers.SerializerMethodField('get_is_author')
 
     def validate(self, data):
         data = super().validate(data)
@@ -34,6 +35,12 @@ class GoodSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_images(obj):
         return map(lambda x: x.image.name, obj.images.all())
+
+
+
+    def get_is_author(self, obj):
+        request = self.context.get("request")
+        return request and hasattr(request, "user") and obj.user == request.user
 
 class UploadedImageSerializer(serializers.ModelSerializer):
     url = serializers.SerializerMethodField('get_name')

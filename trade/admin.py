@@ -23,7 +23,7 @@ class UploadedImageInlineAdmin(admin.TabularInline):
 
 @admin.register(Good)
 class GoodAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "category", "updated_at")
+    list_display = ("id", "name", "user", "category", "updated_at")
     search_fields = ("name", "id__iexact")
     list_filter = ("category", )
     inlines = [UploadedImageInlineAdmin, ]

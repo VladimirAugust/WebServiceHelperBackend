@@ -36,7 +36,7 @@ class GoodsViewSet(mixins.ListModelMixin,
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        return Good.objects.filter(user=self.request.user)
+        return Good.objects.filter(user=self.request.user).order_by('-updated_at')
 
     def retrieve(self, request, *args, **kwargs):
         try:
@@ -47,7 +47,7 @@ class GoodsViewSet(mixins.ListModelMixin,
             except Good.DoesNotExist:
                 raise Http404
 
-        serializer = self.serializer_class(good)
+        serializer = self.serializer_class(good, context={'request': request})
         return Response(serializer.data)
 
     def perform_update(self, serializer):
