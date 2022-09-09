@@ -1,3 +1,5 @@
+from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
@@ -22,12 +24,9 @@ class BlockUserAPIView(generics.UpdateAPIView):
     serializer_class = BlockUserSerializer
 
     def get_object(self, queryset=None):
-        pk = self.request.data.get("pk")
-        if pk:
-            instance = User.objects.get(pk=pk)
-        else:
-            instance = None
-        print(pk)
+        instance = get_object_or_404(User, pk=self.request.data.get("pk", -1))
+        if instance.is_superuser or instance.is_staff:
+            raise ValidationError("Пользователь является модератором или админом")
         return instance
 
 
@@ -61,11 +60,11 @@ class SettingsAPIView(generics.UpdateAPIView):
         serializer = self.serializer_class(data=request.data, context={"request": request}, instance=user)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-        return Response({}, status=status.HTTP_200_OK)
+        return Response({"status": "ok"})
 
     def get(self, request) -> Response:
         serializer = self.serializer_class(request.user, context={"request": request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data) # TODO: test it, we removed status200
 
 
 class LoginAPIView(APIView):
@@ -99,15 +98,12 @@ class UserInfoAPIView(APIView):
     serializer_class = UserInfoSerializer
 
     def get(self, request, pk):
-        try:
-            user = User.objects.get(pk=pk)
-        except User.DoesNotExist:
-            return Response({}, status=status.HTTP_404_NOT_FOUND)
+        user = get_object_or_404(User, pk=pk)
 
         serializer = self.serializer_class(user, context={
             "request": request
         })
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data)
 
 
 class RegisterAPIView(APIView):
@@ -119,8 +115,6 @@ class RegisterAPIView(APIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         validated_data = dict(serializer.validated_data)
-        print(validated_data)
-        if validated_data.get("step") != 1:
-
+        if validated_data.get("code"): #    TODO: test it
             serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)

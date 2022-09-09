@@ -15,6 +15,5 @@ class ActiveUserMiddleware(MiddlewareMixin):
             return
         if current_user:
             now = datetime.datetime.now()
-            cache.set('seen_%s' % current_user.username, now,
+            cache.set('seen_%s' % current_user.tg_id, now,
                       settings.USER_LASTSEEN_TIMEOUT)
-

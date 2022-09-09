@@ -50,11 +50,8 @@ class UserManager(BaseUserManager):
 class User(AbstractUser):
     username = None
 
-    gifts = models.IntegerField(verbose_name="Дары", default=0,
-                                validators=[MinValueValidator(settings.MIN_GIFTS_VALUE)])
-    avatar = models.ImageField(verbose_name="Аватарка", upload_to="images/uploads/users/photo/",
-                               default="images/uploads/users/avatars"
-                                       "/default.png")
+    gifts = models.IntegerField(verbose_name="Дары", default=0, validators=[MinValueValidator(settings.MIN_GIFTS_VALUE)])
+    avatar = models.ImageField(verbose_name="Аватарка", upload_to="images/uploads/users/photo/", default="images/uploads/users/avatars/default.png")
     description = models.TextField(max_length=1200, default="Пользователь не написал о себе.")
     abilities = models.ManyToManyField(Ability, max_length=10, blank=True)
     city = models.CharField(verbose_name="Город проживания", max_length=100, blank=True)
@@ -71,17 +68,10 @@ class User(AbstractUser):
     objects = UserManager()
 
     def last_seen(self):
-        return cache.get('seen_%s' % self.username)
+        return cache.get('seen_%s' % self.tg_id)
 
     def is_online(self) -> bool:
-        """Returns user status. If online - True, else False"""
         if self.last_seen():
             now = datetime.now()
-            if now > self.last_seen() + timedelta(
-                    seconds=settings.USER_ONLINE_TIMEOUT):
-                return False
-            else:
-                return True
-        else:
-            return False
-
+            return now < self.last_seen() + timedelta(seconds=settings.USER_ONLINE_TIMEOUT)
+        return False

@@ -83,7 +83,7 @@ CACHES = {
 }
 
 USER_ONLINE_TIMEOUT = 180   # 3 mi
-USER_LASTSEEN_TIMEOUT = 60 * 60 * 24 * 7    # 1 week
+USER_LASTSEEN_TIMEOUT = 5 * 60 * 60    # 5 min
 USER_CONFIRM_TG_TIMEOUT = 60 * 5  # 5 mi
 
 ROOT_URLCONF = 'backend.urls'

@@ -2,7 +2,7 @@ from rest_framework.authentication import get_authorization_header
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model
 
-
+#   TODO: delete file
 User = get_user_model()
 
 

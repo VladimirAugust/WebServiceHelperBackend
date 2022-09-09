@@ -17,7 +17,6 @@ class GoodSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Состояние предмета (от 1 до 5) является обязательным для товара")
         return data
 
-
     class Meta:
         model = Good
         fields = '__all__'
