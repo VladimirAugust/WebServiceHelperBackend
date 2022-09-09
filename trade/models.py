@@ -9,6 +9,7 @@ from django.db.models import signals
 from django.dispatch import receiver
 from django.template import loader
 
+from common.services.telegram import multiple_send_msg
 
 
 class GoodCategory(models.Model):
@@ -40,8 +41,7 @@ class GoodCategory(models.Model):
 
 
 class Good(models.Model):
-    NOT_READY_FOR_SELL = -1 # a special const to specify that a user doesn't want to sell a good for gifts/currency
-    # NOT_READY_FOR_CURRENCY = Decimal(-1) # a special const to specify that a user doesn't want to sell a good for the real currency
+    NOT_READY_FOR_SELL = -1  # a special const to specify that a user doesn't want to sell a good for gifts/currency
 
     name = models.CharField("Название", max_length=128)
     user = models.ForeignKey(auth.get_user_model(), on_delete=models.CASCADE, verbose_name="Автор")
@@ -69,6 +69,7 @@ class Good(models.Model):
     price_gifts = models.IntegerField("Стоимость в дарах", default=NOT_READY_FOR_SELL, validators=[MinValueValidator(NOT_READY_FOR_SELL)])
     ready_to_change = models.BooleanField("Готов обменять", default=False)
     contacts = models.TextField("Контакты")
+    images = models.JSONField("Фотографии", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -89,6 +90,7 @@ def good_updated(sender, instance, created, **kwargs):
     if instance.state == Good.PublishState.MODERATION:
         moderators = get_user_model().objects.filter(groups__id=settings.GROUP_GOODS_MODERATOR_ID)
         template = loader.get_template('telegram/good_moderation_notify.html')
+        name = f"Id{instance.id} ({instance.type}) {instance.name}"
         url = settings.SITE_DOMAIN + reverse('admin:trade_good_change', args=(instance.id,))
 
         name = f"{instance.name} id{instance.id} {str(instance.category)}"

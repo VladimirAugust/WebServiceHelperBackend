@@ -177,7 +177,7 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': 'logs/server.log',
+            'filename': BASE_DIR / 'logs/server.log',
             'formatter': 'verbose'
         },
     },
