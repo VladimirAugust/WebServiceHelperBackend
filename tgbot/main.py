@@ -48,4 +48,5 @@ def login(message):
 
 
 def run_polling():
+    print("The bot has started")
     bot.polling(non_stop=True)
