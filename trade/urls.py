@@ -9,6 +9,8 @@ api_router.register(r'good', GoodsViewSet, 'good')
 
 urlpatterns = [
     path("categories", CategoriesAPIView.as_view()),
+    path("upload", upload_image_view),
+    path("media/<int:good_id>", GoodImages.as_view()),
 ]
 
 urlpatterns += api_router.urls

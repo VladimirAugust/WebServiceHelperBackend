@@ -31,7 +31,8 @@ SECRET_KEY = env("SECRET_KEY")
 DEBUG = env('DEBUG', False)
 DEVELOPMENT = env.bool('DEVELOPMENT', False)
 
-ALLOWED_HOSTS = ["194-67-91-36.cloudvps.regruhosting.ru", "194.67.91.36"] if not DEVELOPMENT else []
+ALLOWED_HOSTS = ["194-67-91-36.cloudvps.regruhosting.ru", "194.67.91.36"] if not DEVELOPMENT else ["127.0.0.1"]
+CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8080"]
 
 INFO_BOT_TOKEN = env.str('INFO_BOT_TOKEN', '')
 try:
@@ -43,6 +44,8 @@ CONFIRM_REGISTER_MESSAGE = Template('Спасибо за регистрацию 
 CONFIRM_LOGIN_MESSAGE = Template('Код подтверждения: $code')
 MIN_GIFTS_VALUE = 0 # Минимальное кол-во даров у всех пользователей
 MODERATION_AFTER_CHANGES = True # Необходимость модерировать новые/измененные товары/услуги
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -55,6 +58,7 @@ INSTALLED_APPS = [
 
     'account',
     'trade',
+    'common',
 
     'rest_framework',
     'rest_framework.authtoken',
@@ -83,7 +87,7 @@ CACHES = {
 }
 
 USER_ONLINE_TIMEOUT = 180   # 3 mi
-USER_LASTSEEN_TIMEOUT = 5 * 60 * 60    # 5 min
+USER_LASTSEEN_TIMEOUT = 5 * 60 * 60  # 5 min
 USER_CONFIRM_TG_TIMEOUT = 60 * 5  # 5 mi
 
 ROOT_URLCONF = 'backend.urls'
@@ -151,6 +155,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -192,7 +197,7 @@ LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'Europe/Moscow'
 
-USE_I18N = True
+USE_I18N = False
 
 USE_TZ = True
 
