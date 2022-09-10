@@ -31,7 +31,7 @@ SECRET_KEY = env("SECRET_KEY")
 DEBUG = env('DEBUG', False)
 DEVELOPMENT = env.bool('DEVELOPMENT', False)
 
-ALLOWED_HOSTS = ["194-67-91-36.cloudvps.regruhosting.ru", "194.67.91.36"] if not DEVELOPMENT else ["127.0.0.1"]
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS") if not DEVELOPMENT else ["127.0.0.1"]
 CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8080"]
 
 INFO_BOT_TOKEN = env.str('INFO_BOT_TOKEN', '')
