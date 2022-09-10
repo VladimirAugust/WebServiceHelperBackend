@@ -114,7 +114,6 @@ class RegisterAPIView(APIView):
     def post(self, request) -> Response:
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        validated_data = dict(serializer.validated_data)
-        if validated_data.get("code"): #    TODO: test it
+        if request.data.get("code"): #    TODO: test it
             serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)

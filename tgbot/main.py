@@ -12,7 +12,7 @@ bot = telebot.TeleBot(settings.INFO_BOT_TOKEN)
 def start_message(message):
     try:
         User.objects.get(tg_id=message.chat.id)
-        # TODO: "вы уже зарегистрировались, используйте команду /login"
+        bot.send_message(message.chat.id, "Вы уже зарегистрировались, используйте команду /login")
         return
     except User.DoesNotExist:
         pass
