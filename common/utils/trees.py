@@ -7,4 +7,5 @@ def serialize_tree(root, all_nodes, serializer_cls):
     for node in all_nodes:
         if node.parent == root:
             result['children'].append(serialize_tree(node, all_nodes, serializer_cls))
+    result['children'] = sorted(result['children'], key=lambda x: x['sort_order'])
     return result
