@@ -193,13 +193,13 @@ CONFIRM_LOGIN_MESSAGE = Template('Код подтверждения: $code')
 MIN_GIFTS_VALUE = 0
 MODERATION_AFTER_CHANGES = True
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru-RU'
 
 TIME_ZONE = 'Europe/Moscow'
 
-USE_I18N = False
+USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/

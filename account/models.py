@@ -4,6 +4,8 @@ from django.core.validators import MinValueValidator
 from django.core.cache import cache
 from django.conf import settings
 from datetime import datetime, timedelta
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 
 class Ability(models.Model):
@@ -62,6 +64,24 @@ class User(AbstractUser):
     block_reason = models.TextField(verbose_name="Причина блокировки", max_length=1000,
                                     default="Пользователь не заблокирован")
 
+    first_name = models.CharField(_("Имя"), max_length=150, blank=True)
+    last_name = models.CharField(_("Фамилия"), max_length=150, blank=True)
+
+    is_staff = models.BooleanField(
+        _("Статус модератора"),
+        default=False,
+        help_text=_("Даёт право блокировать пользователей"),
+    )
+
+    is_active = models.BooleanField(
+        _("Статус незабанненого"),
+        default=True,
+        help_text=_(
+            "Пользователь не сможет зайти, если будет забанен"
+        ),
+    )
+    date_joined = models.DateTimeField(_("Дата регистрации"), default=timezone.now)
+
     USERNAME_FIELD = 'tg_id'
     REQUIRED_FIELDS = []
 
@@ -75,3 +95,8 @@ class User(AbstractUser):
             now = datetime.now()
             return now < self.last_seen() + timedelta(seconds=settings.USER_ONLINE_TIMEOUT)
         return False
+
+    class Meta:
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+
