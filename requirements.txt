@@ -1,6 +1,6 @@
 asgiref==3.5.0
 backports.zoneinfo==0.2.1
-6Django==4.0.1
+Django==4.0.1
 django-cors-headers==3.11.0
 django-environ==0.8.1
 django-phonenumber-field==6.0.0

@@ -69,7 +69,7 @@ class Good(models.Model):
     price_gifts = models.IntegerField("Стоимость в дарах", default=NOT_READY_FOR_SELL, validators=[MinValueValidator(NOT_READY_FOR_SELL)])
     ready_to_change = models.BooleanField("Готов обменять", default=False)
     contacts = models.TextField("Контакты")
-    images = models.JSONField("Фотографии", blank=True, null=True)
+    # images = models.JSONField("Фотографии", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
